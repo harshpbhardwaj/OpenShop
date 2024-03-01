@@ -58,8 +58,8 @@ export const UserModel = mongoose.model( 'User', UserSchema);
 
 export const getUsers = () => UserModel.find();
 export const getUserByEmailOrShopId = (shopid: string) => UserModel.findOne({ '$or':[ {shopid:shopid}, {email:shopid}]})
-export const getUserByShopId = (shopid: string) => UserModel.findOne({shopid});
-export const getUserByEmail = (email: String) => UserModel.findOne({email});
+export const getUserByShopId = (shopid: string) => UserModel.findOne({shopid:shopid});
+export const getUserByEmail = (email: String) => UserModel.findOne({email:email});
 export const getUserBySessionToken = (sessionToken: String) => UserModel.findOne({ 'authentication.sessionToken': sessionToken });
 export const getUserById = (id: String)=> UserModel.findOne( id );
 

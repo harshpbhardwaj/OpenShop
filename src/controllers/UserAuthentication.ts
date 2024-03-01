@@ -7,7 +7,7 @@ export const register = async (req: express.Request, res: express.Response) => {
         const { password, shopid, shopname } = req.body;
         let email = req.body.email;
         if ( !email|| !password|| !shopid|| !shopname) {
-            return res.sendStatus(400);
+            return res.status(400).json({message: 'Please, fill all required fields!'});
         }
 
         email = String(email).toLocaleLowerCase();
@@ -57,11 +57,34 @@ export const register = async (req: express.Request, res: express.Response) => {
                 password: authentication( salt, password)
             },
             created_at: Date.now()
-        })
+        });
+        if (!user) {
+            return res.status(500).json({ message: 'Internal Server Error!'});
+        }
         return res.status(201).json({ message: 'Successfully registered!'});
     } catch (e) {
         console.log(e);
         return res.status(400).json({ message: 'Something went wrong!'});
+    }
+}
+export const checkshopid = async (req: express.Request, res: express.Response) => {
+    try {
+        const { shopid } = req.params;
+        if (!shopid) {
+            return res.status(400).json({ status:false, message: "ShopId is required!"});
+        }
+        const usernameRegex = /^[a-zA-Z0-9\_\.]+$/;
+        const check_shopid = usernameRegex.exec(shopid);
+        if (!check_shopid) {
+            return res.status(422).json({ status: false, message: "Enter a valid shopid!"});
+        }
+        const availability = await getUserByShopId(shopid);
+        if (!availability) {
+            return res.status(200).json({ status: true, message: "ShopId is available."});
+        }
+        return res.status(200).json({ status: false, message: "ShopId is not available!"});
+    } catch (e) {
+        return res.status(400).json({ status:false, message: "Something went wrong!"});
     }
 }
 
