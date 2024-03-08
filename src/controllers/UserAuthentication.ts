@@ -25,7 +25,7 @@ export const register = async (req: express.Request, res: express.Response) => {
             */
         }
 
-        const nameRegex = /^[a-zA-Z\ ]+$/;
+        const nameRegex = /^[a-zA-Z0-9\ ]+$/;
         const checkname = nameRegex.exec(shopname);
         if (!checkname) {
             return res.status(400).json({ message: 'Enter a valid shop name!'});

@@ -67,8 +67,56 @@ export const createUser = (values: Record<string, any>)=> new UserModel( values 
 export const deleteUserById = (id: String)=> UserModel.findOneAndDelete({ _id: id });
 export const updateUserById = (id: String, values: Record<string, any>)=> UserModel.findByIdAndUpdate( id, values);
 
-export const getFollowers = (id: String) => UserModel.findOne({ _id: id, "following.follow_type": { $ne: 'blockedby'} },{ following:1, _id:0 }).select('+following').populate('following.user_id');
-export const getFollowing = (id: String) => UserModel.findOne({ "following.user_id": id, "following.follow_type": { $ne: 'blockedby'} },{ following:1, _id:0 }).select('+following').populate('following.user_id' );
+export const getFollowers = async (id: String) => {
+    try {
+        const user = await UserModel.findOne({ _id: id, "following.follow_type": { $ne: 'blockedby'} },{ following:1, _id:0 }).select('following').populate('following.user_id');
+        if (!user) {
+            return false;
+        }
+        let followers = Array();
+        let i = 0;
+        for( const users of user.following){
+            followers[i] = users.user_id;
+            i += 1;
+        }
+        return followers;
+    } catch (e) {
+        console.log(e);
+        return false;
+    }
+}
+
+export const getFriends =async (id: String) => {
+    try {
+        const user = await UserModel.findOne({ _id: id, "following.follow_type": { $ne: 'blockedby'}},{ following:1, id:0 }).select('following');
+        if (!user) {
+            return false;
+        }
+        let friends = Array();
+        let i = 0;
+        for( const users of user.following){
+            friends[i] = await UserModel.findOne({ _id: users.user_id, "following.user_id": id, "following.follow_type": { $ne: 'blockedby'} });
+            i += 1;
+        }
+        return friends;
+    } catch (e) {
+        console.log(e);
+        return false;
+    }
+}
+
+export const getFollowing = async (id: String) => {
+    try {
+        const user_data = await UserModel.find({ "following.user_id": id, "following.follow_type": { $ne: 'blockedby'} });
+            if(!user_data.length){
+                return false;
+            }
+            return user_data;
+    } catch (e) {
+        console.log(e);
+        return false;
+    }
+    };
 
 export const followNow = async ( first_id: String, second_id:String ) => {
     try { // first_id will follow second_id
@@ -82,13 +130,30 @@ export const followNow = async ( first_id: String, second_id:String ) => {
         }
         const checkifBlocked = await UserModel.findOne({ _id:first_id, 'following.user_id':second_id, "following.follow_type": 'blockedby' });
         if (checkifBlocked) {
-            return { status: 403, message: "Can't follow this person!" };
+            return false;
         }
         const sended = await UserModel.findByIdAndUpdate(second_id, { $addToSet: { following: { user_id: first_id}}});
         if (!sended) {
             return false;
         }
         return { status: 201, message: 'Successfully followed!'};
+    } catch (e) {
+        console.log({ 'error': e});
+        return false;
+    }
+};
+
+export const unfollowNow = async ( first_id: String, second_id:String ) => {
+    try { // first_id will unfollow second_id
+        const alreadyfollowing = await UserModel.findOne({ _id:second_id, 'following.user_id':first_id }).select('+following');
+        if (!alreadyfollowing) {
+            return false;
+        }
+        const removed = await UserModel.findByIdAndUpdate(second_id, { $pull: { following: { user_id: first_id}}});
+        if (!removed) {
+            return false;
+        }
+        return { status: 201, message: 'Successfully unfollowed!'};
     } catch (e) {
         console.log({ 'error': e});
         return false;

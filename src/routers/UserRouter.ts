@@ -14,7 +14,8 @@ class UserRouter {
 
     getRoutes() {
         this.router.get('/my-followers', UserController.myfollowers);
-        this.router.get('/my-following', UserController.myfollowing);
+        this.router.get('/my-friends', UserController.myfriends);
+        this.router.get('/my-followings', UserController.myfollowing);
     }
 
     postRoutes() {
@@ -23,6 +24,7 @@ class UserRouter {
 
     patchRoutes() {
         this.router.patch('/follow-now/:u', UserController.follow);
+        this.router.patch('/unfollow-now/:u', UserController.unfollow);
     }
 
     deleteRoutes() {

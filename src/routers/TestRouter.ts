@@ -1,5 +1,5 @@
 import {Router} from 'express';
-import {UserController} from '../controllers/UserInteraction';
+import {TestController} from '../controllers/TestController';
 
 class UserRouter {
     public router: Router;
@@ -13,7 +13,7 @@ class UserRouter {
     }
 
     getRoutes() {
-        
+        this.router.get('/all-users', TestController.getAllUsers);
     }
 
     postRoutes() {

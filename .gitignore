@@ -3,4 +3,4 @@ node_modules
 */.DS_Store
 */*/.DS_Store
 src/controllers/TestController.ts
-# src/routers/TestRouter.ts
+src/routers/TestRouter.ts
